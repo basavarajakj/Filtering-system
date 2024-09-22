@@ -12,8 +12,9 @@ import { cn } from "@/lib/utils";
 import { useQuery, type Query } from "@tanstack/react-query";
 import axios from "axios";
 import type { QueryResult } from "@upstash/vector";
-import type { Product as TProduct} from "@/db";
+import type { Product as TProduct } from "@/db";
 import Product from "@/components/Products/Product";
+import ProductSkeleton from "@/components/Products/ProductSkeleton";
 
 const SORT_OPTIONS = [
   {
@@ -34,21 +35,21 @@ export default function Home() {
 
   const [filter, setFilter] = useState({ sort: 'none' });
 
-  const {data: products} = useQuery({
+  const { data: products } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const {data} = await axios.post<QueryResult<TProduct>>(
-        'http://localhost:3000/api/products',{
-          filter: {
-            sort: filter.sort,
-          },
-        }
+      const { data } = await axios.post<QueryResult<TProduct>>(
+        'http://localhost:3000/api/products', {
+        filter: {
+          sort: filter.sort,
+        },
+      }
       )
 
       return data
     },
   })
-  
+
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-2 lg:px-6">
@@ -66,11 +67,12 @@ export default function Home() {
               {SORT_OPTIONS.map((option) => (
                 <button
                   key={option.name}
-                  className={cn('text-left w-full block px-4 py-2 text-sm ', 
-                    { "text-gray-900 bg-gray-100": option.value === filter.sort, 
+                  className={cn('text-left w-full block px-4 py-2 text-sm ',
+                    {
+                      "text-gray-900 bg-gray-100": option.value === filter.sort,
                       "text-gray-500": option.value !== filter.sort
 
-                  })}
+                    })}
                   onClick={() => {
                     setFilter((prev) => ({
                       ...prev,
@@ -90,16 +92,21 @@ export default function Home() {
       </div>
 
       <section className="pb-24 pt-6">
-        <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
           {/* filters */}
-           <div></div>
-          <ul className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {products?.map((product: any) => (
-              <Product 
-                key={product.id}
-                product={product.metadata!}
-              />
-            ))}
+          <div></div>
+          <ul className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {products 
+              ? products?.map((product) => (
+                <Product
+                  key={product.id}
+                  product={product.metadata!}
+                />
+               ))
+              : new Array(12)
+              .fill(null)
+              .map((_, i) => <ProductSkeleton key={i} />) 
+            }
           </ul>
         </div>
       </section>
